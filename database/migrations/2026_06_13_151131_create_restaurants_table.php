@@ -11,12 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('restaurants', function (Blueprint $table) {
+    Schema::create('restaurants', function (Blueprint $table) {
     $table->id();
+
+    $table->foreignId('owner_id')->constrained('users')->onDelete('cascade');
+
     $table->string('name');
     $table->string('image')->nullable();
     $table->string('address')->nullable();
+
+    $table->string('phone')->nullable();
+    $table->text('description')->nullable();
+
     $table->decimal('rating', 2, 1)->default(4.0);
+
     $table->timestamps();
 });
     }

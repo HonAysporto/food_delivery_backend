@@ -4,47 +4,164 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
 
-    public function store(Request $request)
+public function index(Request $request)
 {
-    $request->validate([
-        'items' => 'required|array',
-        'total' => 'required|numeric',
-    ]);
-
-    $order = Order::create([
-        'user_id' => $request->user()->id,
-        'total' => $request->total,
-        'status' => 'pending',
-    ]);
-
-    foreach ($request->items as $item) {
-        OrderItem::create([
-            'order_id' => $order->id,
-            'food_id' => $item['id'],
-            'quantity' => $item['quantity'],
-            'price' => $item['price'],
-        ]);
-    }
-
-    return response()->json([
-        'message' => 'Order placed successfully',
-        'order' => $order
-    ]);
-}
-    /**
-     * Display a listing of the resource.
-     */
-  public function index(Request $request)
-{
-    return Order::where('user_id', $request->user()->id)
+    return Order::where('user_id', auth()->id())
+        ->with([
+            'items.food'
+        ])
         ->latest()
         ->get();
 }
+
+public function store(Request $request)
+{
+   
+    try {
+         
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'total' => $request->total,
+            'status' => 'pending',
+        ]);
+
+        foreach ($request->items as $item) {
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'food_id' => $item['id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+            ]);
+
+        }
+
+        return response()->json([
+            'success' => true
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ], 500);
+
+    }
+}
+
+
+
+public function ownerOrders()
+{
+    $restaurant = Restaurant::where(
+        'owner_id',
+        auth()->id()
+    )->first();
+
+    if (!$restaurant) {
+        return response()->json([]);
+    }
+
+    return Order::whereHas(
+        'items.food',
+        function ($query) use ($restaurant) {
+            $query->where(
+                'restaurant_id',
+                $restaurant->id
+            );
+        }
+    )
+    ->with([
+        'user',
+        'items.food'
+    ])
+    ->latest()
+    ->get();
+}
+
+
+public function updateStatus(Request $request, Order $order)
+{
+    $request->validate([
+        'status' => 'required'
+    ]);
+
+    $flow = [
+        'pending' => 'accepted',
+        'accepted' => 'preparing',
+        'preparing' => 'out_for_delivery',
+        'out_for_delivery' => 'delivered',
+    ];
+
+    if ($order->status === 'delivered') {
+        return response()->json([
+            'message' => 'Order already delivered'
+        ], 422);
+    }
+
+    if (
+        isset($flow[$order->status]) &&
+        $flow[$order->status] !== $request->status
+    ) {
+        return response()->json([
+            'message' => 'Invalid status transition'
+        ], 422);
+    }
+
+    $order->update([
+        'status' => $request->status
+    ]);
+
+    return response()->json([
+        'message' => 'Status updated',
+        'order' => $order
+    ]);
+}
+
+public function analytics()
+{
+    $restaurant = Restaurant::where('owner_id', auth()->id())->first();
+
+    if (!$restaurant) {
+        return response()->json([
+            'total_orders' => 0,
+            'total_revenue' => 0,
+            'total_foods' => 0,
+            'pending_orders' => 0,
+            'delivered_orders' => 0,
+        ]);
+    }
+
+    $orders = Order::whereHas('items.food', function ($query) use ($restaurant) {
+        $query->where('restaurant_id', $restaurant->id);
+    })->get();
+
+    return response()->json([
+        'total_orders' => $orders->count(),
+        'total_revenue' => $orders->sum('total'),
+        'total_foods' => $restaurant->foods()->count(),
+        'pending_orders' => $orders->where('status', 'pending')->count(),
+        'delivered_orders' => $orders->where('status', 'delivered')->count(),
+    ]);
+}
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Show the form for creating a new resource.

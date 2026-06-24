@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,6 +17,7 @@ class AuthController extends Controller
             'lastname' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
+            'role' => 'required|in:customer,owner',
         ]);
 
         $user = User::create([
@@ -23,12 +25,13 @@ class AuthController extends Controller
             'lastname' => $request->lastname,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
         $token = $user->createToken('food_delivery_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $this->formatUser($user),
             'token' => $token
         ]);
     }
@@ -51,9 +54,18 @@ class AuthController extends Controller
         $token = $user->createToken('food_delivery_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $this->formatUser($user),
             'token' => $token
         ]);
+    }
+
+    public function user(Request $request)
+    {
+        $user = $request->user();
+
+        return response()->json(
+            $this->formatUser($user)
+        );
     }
 
     public function logout(Request $request)
@@ -63,5 +75,19 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Logged out successfully'
         ]);
+    }
+
+    // ✅ CENTRALIZED USER FORMAT (VERY IMPORTANT)
+    private function formatUser($user)
+    {
+        return [
+            'id' => $user->id,
+            'firstname' => $user->firstname,
+            'lastname' => $user->lastname,
+            'email' => $user->email,
+            'role' => $user->role,
+            'restaurant_exists' =>
+                Restaurant::where('owner_id', $user->id)->exists(),
+        ];
     }
 }

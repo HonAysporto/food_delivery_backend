@@ -21,11 +21,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'firstname',
-        'lastname',
-        'email',
-        'password',
-    ];
+    'firstname',
+    'lastname',
+    'email',
+    'password',
+    'role',
+];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,4 +50,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isAdmin()
+{
+    return $this->role === 'admin';
+}
+
+public function isRestaurantOwner()
+{
+    return $this->role === 'owner';
+}
+
+public function isCustomer()
+{
+    return $this->role === 'customer';
+}
+
+public function isRider()
+{
+    return $this->role === 'rider';
+}
+
+public function restaurants()
+{
+    return $this->hasMany(Restaurant::class, 'owner_id');
+}
 }
