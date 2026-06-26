@@ -14,6 +14,8 @@ class Restaurant extends Model
     'phone',
     'description',
     'rating',
+    'is_open',
+    'status'
 ];
 
     public function categories()

@@ -33,6 +33,20 @@ public function store(Request $request)
 
         foreach ($request->items as $item) {
 
+        $food = \App\Models\Food::find(
+    $item['id']
+);
+
+if (!$food->is_available) {
+
+    return response()->json([
+        'message' =>
+        $food->name .
+        ' is out of stock'
+    ], 422);
+
+}
+
             OrderItem::create([
                 'order_id' => $order->id,
                 'food_id' => $item['id'],
@@ -97,8 +111,10 @@ public function updateStatus(Request $request, Order $order)
     $flow = [
         'pending' => 'accepted',
         'accepted' => 'preparing',
-        'preparing' => 'out_for_delivery',
-        'out_for_delivery' => 'delivered',
+        'preparing' => 'ready_for_pickup',
+        'ready_for_pickup' => 'on_the_way',
+        'on_the_way' => 'delivered',
+
     ];
 
     if ($order->status === 'delivered') {

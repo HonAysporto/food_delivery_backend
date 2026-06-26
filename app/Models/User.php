@@ -2,47 +2,30 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-    'firstname',
-    'lastname',
-    'email',
-    'password',
-    'role',
-];
+        'firstname',
+        'lastname',
+        'email',
+        'password',
+        'role',
+        'status',
+    ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -51,28 +34,53 @@ class User extends Authenticatable
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Role Helpers
+    |--------------------------------------------------------------------------
+    */
+
     public function isAdmin()
-{
-    return $this->role === 'admin';
-}
+    {
+        return $this->role === 'admin';
+    }
 
-public function isRestaurantOwner()
-{
-    return $this->role === 'owner';
-}
+    public function isRestaurantOwner()
+    {
+        return $this->role === 'owner';
+    }
 
-public function isCustomer()
-{
-    return $this->role === 'customer';
-}
+    public function isCustomer()
+    {
+        return $this->role === 'customer';
+    }
 
-public function isRider()
-{
-    return $this->role === 'rider';
-}
+    public function isRider()
+    {
+        return $this->role === 'rider';
+    }
 
-public function restaurants()
-{
-    return $this->hasMany(Restaurant::class, 'owner_id');
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    // One Owner -> One Restaurant
+    public function restaurant()
+    {
+        return $this->hasOne(Restaurant::class, 'owner_id');
+    }
+
+    // One Rider Profile
+    public function rider()
+    {
+        return $this->hasOne(Rider::class);
+    }
+
+    // Customer Orders
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

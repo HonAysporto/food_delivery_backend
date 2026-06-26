@@ -11,12 +11,16 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
-    })->withMiddleware(function ($middleware) {
+->withMiddleware(function (Middleware $middleware): void {
+
+    $middleware->statefulApi();
+
     $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'restaurant.active' => \App\Http\Middleware\RestaurantActive::class,
     ]);
+
 })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

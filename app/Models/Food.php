@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Food extends Model
 {
     protected $table = 'foods';
-    protected $fillable = ['restaurant_id', 'category_id', 'name', 'description', 'price', 'image'];
+    protected $fillable = ['restaurant_id', 'category_id', 'name', 'description', 'price', 'image', 'is_available'];
 
     public function restaurant() {
     return $this->belongsTo(Restaurant::class);

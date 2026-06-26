@@ -10,6 +10,8 @@ use App\Http\Controllers\FoodController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\RiderController;
 
 
 /*
@@ -29,7 +31,11 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/restaurants', function () {
 
-    return \App\Models\Restaurant::withCount([
+    return \App\Models\Restaurant::where(
+        'status',
+        'active'
+    )
+    ->withCount([
         'foods',
         'reviews'
     ])
@@ -50,9 +56,27 @@ Route::get('/restaurants/{id}/categories', function ($id) {
 });
 
 Route::get('/restaurants/{id}/foods', function ($id) {
-    return \App\Models\Food::where('restaurant_id', $id)
-        ->with('category')
-        ->get();
+
+    $restaurant =
+        \App\Models\Restaurant::find($id);
+
+    if (
+        !$restaurant ||
+        $restaurant->status !== 'active'
+    ) {
+        return response()->json([
+            'message' =>
+            'Restaurant unavailable'
+        ], 404);
+    }
+
+    return \App\Models\Food::where(
+        'restaurant_id',
+        $id
+    )
+    ->with('category')
+    ->get();
+
 });
 
 Route::get(
@@ -102,9 +126,24 @@ Route::middleware([
 |--------------------------------------------------------------------------
 */
 
+
 Route::middleware([
     'auth:sanctum',
     'role:owner'
+])->group(function () {
+
+    Route::post(
+        '/owner/restaurants',
+        [RestaurantController::class, 'store']
+    );
+
+});
+
+
+Route::middleware([
+    'auth:sanctum',
+    'role:owner',
+    'restaurant.active'
 ])->group(function () {
 
     /*
@@ -113,10 +152,10 @@ Route::middleware([
     |--------------------------------------------------------------------------
     */
 
-    Route::post(
-        '/owner/restaurants',
-        [RestaurantController::class, 'store']
-    );
+    Route::get(
+    '/owner/restaurant',
+    [RestaurantController::class, 'ownerRestaurant']
+);
 
     /*
     |--------------------------------------------------------------------------
@@ -186,9 +225,106 @@ Route::middleware([
         [OrderController::class, 'updateStatus']
     );
 
+    Route::put(
+    '/owner/foods/{food}/availability',
+    [FoodController::class, 'toggleAvailability']
+);
+
     Route::get('/owner/analytics', [OrderController::class, 'analytics']);
 
         Route::get('/owner/profile', [ProfileController::class, 'show']);
     Route::put('/owner/profile', [ProfileController::class, 'update']);
     Route::put('/owner/profile/password', [ProfileController::class, 'changePassword']);
+
+    Route::put(
+    '/owner/restaurant/status',
+    [RestaurantController::class, 'toggleStatus']
+);
+});
+
+
+
+// Admin Routes
+
+
+Route::middleware([
+    'auth:sanctum',
+    'admin'
+])->prefix('admin')->group(function () {
+
+    Route::get(
+        '/analytics',
+        [AdminController::class, 'analytics']
+    );
+
+       Route::get(
+        '/restaurants',
+        [AdminController::class, 'restaurants']
+    );
+
+    Route::put(
+        '/restaurants/{restaurant}/suspend',
+        [AdminController::class, 'suspendRestaurant']
+    );
+
+    Route::put(
+        '/restaurants/{restaurant}/activate',
+        [AdminController::class, 'activateRestaurant']
+    );
+
+    Route::get(
+    '/users',
+    [AdminController::class, 'users']
+);
+
+Route::put(
+    '/users/{user}/suspend',
+    [AdminController::class, 'suspendUser']
+);
+
+Route::put(
+    '/users/{user}/activate',
+    [AdminController::class, 'activateUser']
+);
+
+Route::get(
+    '/orders',
+    [AdminController::class, 'orders']
+);
+
+Route::get(
+    '/orders/{order}',
+    [AdminController::class, 'showOrder']
+);
+
+});
+
+// Rider
+
+Route::middleware(['auth:sanctum'])->prefix('rider')->group(function () {
+
+    Route::post(
+        '/profile',
+        [RiderController::class, 'store']
+    );
+
+        Route::get(
+'/available-orders',
+[RiderController::class,'availableOrders']
+);
+
+Route::get(
+'/my-orders',
+[RiderController::class,'myOrders']
+);
+
+Route::put(
+'/accept-order/{order}',
+[RiderController::class,'acceptOrder']
+);
+
+Route::put(
+'/deliver-order/{order}',
+[RiderController::class,'deliverOrder']
+);
 });

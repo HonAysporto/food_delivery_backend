@@ -70,11 +70,25 @@ public function store(Request $request)
         'description' => $request->description,
         'price' => $request->price,
         'image' => $request->image,
+        'is_available' => true,
     ]);
 
     return response()->json($food);
 }
 
+
+
+public function toggleAvailability(Food $food)
+{
+    $food->update([
+        'is_available' => !$food->is_available
+    ]);
+
+    return response()->json([
+        'message' => 'Availability updated',
+        'food' => $food
+    ]);
+}
     /**
      * Display the specified resource.
      */

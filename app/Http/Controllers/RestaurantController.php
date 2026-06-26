@@ -53,6 +53,40 @@ public function store(Request $request)
     ]);
 }
 
+public function toggleStatus()
+{
+    $restaurant = Restaurant::where(
+        'owner_id',
+        auth()->id()
+    )->first();
+
+    if (!$restaurant) {
+        return response()->json([
+            'message' => 'Restaurant not found'
+        ], 404);
+    }
+
+    $restaurant->update([
+        'is_open' => !$restaurant->is_open
+    ]);
+
+    return response()->json([
+        'message' => 'Status updated',
+        'restaurant' => $restaurant
+    ]);
+}
+
+public function ownerRestaurant()
+{
+    $restaurant = Restaurant::where(
+        'owner_id',
+        auth()->id()
+    )->first();
+
+    return response()->json($restaurant);
+}
+
+
     /**
      * Display the specified resource.
      */
