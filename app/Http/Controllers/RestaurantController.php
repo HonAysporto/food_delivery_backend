@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
+use App\Models\RestaurantWallet;
 // use Illuminate\Support\Facades\Auth;
 
 class RestaurantController extends Controller
@@ -84,6 +85,35 @@ public function ownerRestaurant()
     )->first();
 
     return response()->json($restaurant);
+}
+
+public function wallet()
+{
+    $restaurant = Restaurant::where(
+        'owner_id',
+        auth()->id()
+    )->first();
+
+    if (!$restaurant) {
+        return response()->json([
+            'balance' => 0,
+            'total_earned' => 0,
+            'total_withdrawn' => 0,
+        ]);
+    }
+
+    $wallet = RestaurantWallet::firstOrCreate(
+        [
+            'restaurant_id' => $restaurant->id
+        ],
+        [
+            'balance' => 0,
+            'total_earned' => 0,
+            'total_withdrawn' => 0,
+        ]
+    );
+
+    return response()->json($wallet);
 }
 
 

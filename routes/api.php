@@ -96,6 +96,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
      Route::get('/user', [AuthController::class, 'user']);
 
+      Route::get('/profile', [ProfileController::class, 'show']);
+
+       Route::put('/profile', [ProfileController::class, 'update']);
+
+    Route::put('/profile/password', [ProfileController::class, 'changePassword']);
+
      Route::post(
     '/reviews',
     [ReviewController::class, 'store']
@@ -136,6 +142,11 @@ Route::middleware([
         '/owner/restaurants',
         [RestaurantController::class, 'store']
     );
+
+    Route::get(
+    '/owner/wallet',
+    [RestaurantController::class, 'wallet']
+);
 
 });
 
@@ -273,6 +284,11 @@ Route::middleware([
     );
 
     Route::get(
+    '/wallet',
+    [AdminController::class, 'wallet']
+);
+
+    Route::get(
     '/users',
     [AdminController::class, 'users']
 );
@@ -326,5 +342,10 @@ Route::put(
 Route::put(
 '/deliver-order/{order}',
 [RiderController::class,'deliverOrder']
+);
+
+Route::get(
+    '/wallet',
+    [RiderController::class, 'wallet']
 );
 });

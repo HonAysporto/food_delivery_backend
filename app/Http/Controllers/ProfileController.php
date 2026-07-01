@@ -18,22 +18,25 @@ class ProfileController extends Controller
     }
 
     // UPDATE PROFILE INFO
-    public function update(Request $request)
-    {
-        $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
-            'email' => 'required|email',
-        ]);
+public function update(Request $request)
+{
+    $request->validate([
+        'firstname' => 'required|string|max:255',
+        'lastname' => 'required|string|max:255',
+    ]);
 
-        $user = $request->user();
-        $user->update($request->only('firstname', 'lastname', 'email'));
+    $user = $request->user();
 
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'user' => $user
-        ]);
-    }
+    $user->update([
+        'firstname' => $request->firstname,
+        'lastname' => $request->lastname,
+    ]);
+
+    return response()->json([
+        'message' => 'Profile updated successfully',
+        'user' => $user,
+    ]);
+}
 
     // CHANGE PASSWORD
     public function changePassword(Request $request)

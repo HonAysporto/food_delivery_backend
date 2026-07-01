@@ -21,4 +21,10 @@ class Rider extends Model
     }
 
 
+    public function wallet()
+{
+    return $this->hasOne(RiderWallet::class);
+}
+
+
 }

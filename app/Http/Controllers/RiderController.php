@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\Models\Rider;
 use App\Models\Order;
+use App\Services\WalletService;
+use App\Models\RiderWallet;
 
 use Illuminate\Http\Request;
 
@@ -34,8 +36,9 @@ public function availableOrders()
     )
     ->whereNull('rider_id')
     ->with([
+        'restaurant',
         'user',
-        'items.food'
+        'items.food.restaurant'
     ])
     ->latest()
     ->get();
@@ -75,6 +78,7 @@ public function myOrders()
         auth()->id()
     )
     ->with([
+        'restaurant',
         'user',
         'items.food'
     ])
@@ -82,28 +86,61 @@ public function myOrders()
     ->get();
 }
 
-public function deliverOrder(
-    Order $order
-)
+public function deliverOrder(Order $order)
 {
-
-    if($order->rider_id!=auth()->id()){
+    if ($order->rider_id != auth()->id()) {
 
         return response()->json([
-            'message'=>'Unauthorized'
-        ],403);
+            'message' => 'Unauthorized'
+        ], 403);
+
+    }
+
+    if ($order->status == 'delivered') {
+
+        return response()->json([
+            'message' => 'Already delivered'
+        ], 422);
 
     }
 
     $order->update([
-
-        'status'=>'delivered'
-
+        'status' => 'delivered'
     ]);
+
+    WalletService::creditOrder($order);
 
     return response()->json([
-        'message'=>'Delivered'
+        'message' => 'Delivered successfully'
     ]);
+}
 
+public function wallet()
+{
+    $rider = Rider::where(
+        'user_id',
+        auth()->id()
+    )->first();
+
+    if (!$rider) {
+        return response()->json([
+            'balance' => 0,
+            'total_earned' => 0,
+            'total_withdrawn' => 0,
+        ]);
+    }
+
+    $wallet = RiderWallet::firstOrCreate(
+        [
+            'rider_id' => $rider->id
+        ],
+        [
+            'balance' => 0,
+            'total_earned' => 0,
+            'total_withdrawn' => 0,
+        ]
+    );
+
+    return response()->json($wallet);
 }
 }

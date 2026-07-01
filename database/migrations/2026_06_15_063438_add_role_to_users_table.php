@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->enum('role', [
                 'customer',
-                'restaurant_owner',
+                'owner',
                 'rider',
                 'admin'
             ])->default('customer');

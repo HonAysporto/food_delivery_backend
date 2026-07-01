@@ -7,41 +7,50 @@ use App\Models\Order;
 use App\Models\Food;
 use App\Models\Restaurant;
 use App\Models\Review;
+use App\Models\AdminWallet;
+use App\Models\Rider;
 
 
 
 class AdminController extends Controller
 {
-    public function analytics()
-    {
-        return response()->json([
 
-            'total_users' =>
-                User::count(),
+public function analytics()
+{
+    $wallet = AdminWallet::first();
 
-            'total_restaurants' =>
-                Restaurant::count(),
+    return response()->json([
 
-            'total_foods' =>
-                Food::count(),
+        'total_users' => User::count(),
 
-            'total_orders' =>
-                Order::count(),
+        'total_restaurants' => Restaurant::count(),
 
-            'total_revenue' =>
-                Order::sum('total'),
+        'total_riders' => Rider::count(),
 
-            'total_reviews' =>
-                Review::count(),
+        'total_foods' => Food::count(),
 
-        ]);
-    }
+        'total_orders' => Order::count(),
+
+        'total_reviews' => Review::count(),
+
+        'wallet' => $wallet,
+        'total_platform_revenue' => Order::sum('total'),
+
+    ]);
+}
 
     public function restaurants()
 {
     return Restaurant::with('owner')
         ->latest()
         ->get();
+}
+
+
+
+public function wallet()
+{
+    return AdminWallet::first();
 }
 
 

@@ -21,15 +21,33 @@ public function index(Request $request)
 }
 
 public function store(Request $request)
+
 {
+    $firstFood = \App\Models\Food::find(
+    $request->items[0]['id']
+);
+
+$restaurantId = $firstFood->restaurant_id;
    
     try {
          
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'total' => $request->total,
-            'status' => 'pending',
-        ]);
+      $order = Order::create([
+
+    'user_id'=>auth()->id(),
+
+     'restaurant_id' => $restaurantId,
+
+    'total'=>$request->total,
+
+    'status'=>'pending',
+
+    'delivery_name'=>$request->customer['fullName'],
+
+    'delivery_phone'=>$request->customer['phone'],
+
+    'delivery_address'=>$request->customer['address'],
+
+]);
 
         foreach ($request->items as $item) {
 
@@ -162,7 +180,7 @@ public function analytics()
 
     return response()->json([
         'total_orders' => $orders->count(),
-        'total_revenue' => $orders->sum('total'),
+        'total_revenue' => ($orders->sum('total') - $orders->sum('total') * 0.05) - $orders->sum('total') * 0.05,
         'total_foods' => $restaurant->foods()->count(),
         'pending_orders' => $orders->where('status', 'pending')->count(),
         'delivered_orders' => $orders->where('status', 'delivered')->count(),
