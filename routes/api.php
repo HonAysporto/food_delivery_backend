@@ -12,6 +12,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RiderController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
+use App\Http\Controllers\API\Auth\GoogleAuthController;
+
 
 
 /*
@@ -22,12 +25,24 @@ use App\Http\Controllers\RiderController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
 
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
+
+Route::get(
+    '/auth/google',
+    [GoogleAuthController::class, 'redirect']
+);
+
+Route::get(
+    '/auth/google/callback',
+    [GoogleAuthController::class, 'callback']
+);
 
 Route::get('/restaurants', function () {
 
