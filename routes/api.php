@@ -333,22 +333,16 @@ Route::get(
 
 
 
+
+
 Route::get('/db-test', function () {
-    try {
-        DB::connection()->getPdo();
-
-        return response()->json([
-            'success' => true,
-            'database' => DB::connection()->getDatabaseName(),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-        ], 500);
-    }
+    return response()->json([
+        'DB_CONNECTION' => env('DB_CONNECTION'),
+        'config_connection' => config('database.default'),
+        'DB_HOST' => env('DB_HOST'),
+        'DB_DATABASE' => env('DB_DATABASE'),
+    ]);
 });
-
 // Rider
 
 Route::middleware(['auth:sanctum'])->prefix('rider')->group(function () {
