@@ -345,6 +345,18 @@ Route::get('/db-test', function () {
 });
 
 
+
+Route::get('/ssl-test', function () {
+    return [
+        'exists' => file_exists(storage_path('certs/ca.pem')),
+        'path' => storage_path('certs/ca.pem'),
+        'db_connection' => config('database.default'),
+        'host' => config('database.connections.mysql.host'),
+        'ssl' => config('database.connections.mysql.options'),
+    ];
+});
+
+
 // Rider
 
 Route::middleware(['auth:sanctum'])->prefix('rider')->group(function () {
