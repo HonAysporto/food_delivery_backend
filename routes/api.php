@@ -357,6 +357,34 @@ Route::get('/ssl-test', function () {
 });
 
 
+use PDO;
+
+Route::get('/pdo-test', function () {
+    try {
+        $pdo = new PDO(
+            "mysql:host=" . env('DB_HOST') .
+            ";port=" . env('DB_PORT') .
+            ";dbname=" . env('DB_DATABASE'),
+            env('DB_USERNAME'),
+            env('DB_PASSWORD'),
+            [
+                PDO::MYSQL_ATTR_SSL_CA => storage_path('certs/ca.pem'),
+            ]
+        );
+
+        return [
+            'success' => true,
+            'version' => $pdo->query("SELECT VERSION()")->fetchColumn(),
+        ];
+    } catch (\Throwable $e) {
+        return [
+            'success' => false,
+            'message' => $e->getMessage(),
+        ];
+    }
+});
+
+
 // Rider
 
 Route::middleware(['auth:sanctum'])->prefix('rider')->group(function () {
