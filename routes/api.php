@@ -13,7 +13,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
-use App\Http\Controllers\API\Auth\GoogleAuthController;
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 
 
 
