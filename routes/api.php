@@ -343,6 +343,8 @@ Route::get('/db-test', function () {
         'DB_DATABASE' => env('DB_DATABASE'),
     ]);
 });
+
+
 // Rider
 
 Route::middleware(['auth:sanctum'])->prefix('rider')->group(function () {
