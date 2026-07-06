@@ -14,6 +14,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\GoogleAuthController;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -328,6 +329,24 @@ Route::get(
     [AdminController::class, 'showOrder']
 );
 
+});
+
+
+
+Route::get('/db-test', function () {
+    try {
+        DB::connection()->getPdo();
+
+        return response()->json([
+            'success' => true,
+            'database' => DB::connection()->getDatabaseName(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 });
 
 // Rider
