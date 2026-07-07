@@ -26,7 +26,14 @@ class WalletService
                 return;
             }
 
-            $settings = PlatformSetting::first();
+           $settings = PlatformSetting::firstOrCreate(
+    ['id' => 1],
+    [
+        'restaurant_percentage' => 90,
+        'rider_percentage' => 5,
+        'admin_percentage' => 5,
+    ]
+);
 
             $restaurantAmount =
                 $order->total *
@@ -83,7 +90,13 @@ $riderWallet->increment(
             }
 
             // Admin Wallet
-            $adminWallet = AdminWallet::first();
+          $adminWallet = AdminWallet::firstOrCreate(
+    ['id' => 1],
+    [
+        'balance' => 0,
+        'total_earned' => 0,
+    ]
+);
 
          $adminWallet->increment('balance', $adminAmount);
 
