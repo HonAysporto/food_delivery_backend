@@ -49,7 +49,7 @@ class GoogleAuthController extends Controller
                 ->plainTextToken;
 
             return redirect(
-                "http://localhost:5173/google-auth?"
+                "https://food-delivery-front-rho.vercel.app/google-auth?"
                 . "token={$token}"
                 . "&id={$user->id}"
             );
